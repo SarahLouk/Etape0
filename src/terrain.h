@@ -15,7 +15,6 @@ typedef struct {
 } Personne;
 
 
-Personne personne(Personne p, int x, int y);
 bool** creation_terrain();
 void afficher_matrice(bool ** terrain);
 bool isFree(bool **terrain,int x, int y);

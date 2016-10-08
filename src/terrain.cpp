@@ -34,11 +34,6 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 
-Personne personne(Personne p, int x, int y) {
-    p._x = x;
-    p._y = y;
-    return p;
-}
 
 /**
     Renvoie la moyenne des valeurs d'un tableau de double, de taille nbExecutions
@@ -64,9 +59,9 @@ void lancer_statistiques(double *executionsCPU, double *executionsUtil) {
 
 bool** creation_terrain() {
     // Creation de la matrice
-    bool **terrain = (bool **) malloc((LONGUEUR+1) * sizeof(bool *));
+    bool **terrain = (bool **) malloc((LONGUEUR) * sizeof(bool *));
     for(int i = 0; i < LONGUEUR; i++) {
-        terrain[i] = (bool *) malloc((LARGEUR+1) * sizeof(bool *));
+        terrain[i] = (bool *) malloc((LARGEUR) * sizeof(bool *));
     }
 
     // Initialisation totale de la matrice a true
@@ -139,7 +134,9 @@ Personne * init_personnes(bool **terrain, int p){
 
         if(isFree(terrain,x,y)){
             Personne p;
-            tab_personnes[i]= personne(p, x, y);
+            p._x = x;
+            p._y = y;
+            tab_personnes[i]= p;
             for(int i=x-(TAILLE_P-1);i<=x;i++){
                 for(int j=y-(TAILLE_P-1);j<=y;j++){
                     terrain[i][j] = false;
