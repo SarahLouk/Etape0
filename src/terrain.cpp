@@ -264,24 +264,24 @@ void deplacement(bool **terrain, Personne p){
             //else if wait;
             break;
 
-        //NO
+            //NO
         case 1:
             if(isFree(terrain,p._x-1,p._y-1)) actualise(terrain,p,1);
             else if(!isNotAWall(p._x-1,p._y-1)) actualise(terrain,p,0);
             break;
 
-        //O
+            //O
         case 2:
             if(isFree(terrain,p._x-1,p._y)) actualise(terrain,p,2);
             break;
 
-        //SO
+            //SO
         case 3:
             if(isFree(terrain,p._x-1,p._y+1)) actualise(terrain,p,3);
             else if(!isNotAWall(p._x-1,p._y+11)) actualise(terrain,p,4);
             break;
 
-        //S
+            //S
         case 4:
             if(isFree(terrain,p._x,p._y+1)) actualise(terrain,p,4);
             break;
@@ -301,6 +301,7 @@ void executer (int n_personnes, int n_thread) {
     int i;
     for (i = 1; i <= NB_EXEC; ++i) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
+
         // On procede a l'initialisation du terrain
         clock_t chronoCPU;
         time_t chronoUtil;
@@ -343,7 +344,7 @@ void get_options(int argc, char ** argv) {
     int opt, i;
     while ((opt = getopt(argc, argv, "m:p:t:")) != -1) { // Boucle pour lire les options
         switch (opt) {
-            case 'p':   // Option pour le nombre d'itérations a executer
+            case 'p':   // Option pour le nombre de personnes a executer
                 if(is_number(optarg)) { // On verifie que le parametre est bien un nombre
                     int argOption = atoi(optarg);
                     if (argOption >= 0 && argOption < 10) {
@@ -362,27 +363,19 @@ void get_options(int argc, char ** argv) {
                 mActivee = true;
                 break;
             case 't': // Option pour le nombre de threads a lancer
-                NB_THREADS = strlen(optarg);
-                if (NB_THREADS > 1) {
+                NB_THREADS = atoi(optarg);
+                if (NB_THREADS > 2 || !isdigit(NB_THREADS) || NB_THREADS < 0) {
                     fprintf(stderr, "Trop de valeurs pour l'option t\n");
-                }
-
-                for (i = 0; i < NB_THREADS; i++) {
-                    if(isdigit(optarg[i])) {
-                        int argOption = optarg[i] - '0'; // Recupere la valeur associee a l'option t
-                        if (argOption == 0) {
-                            printf("Nombre de threads a executer: 1 \n");
-                        } else if (argOption == 1) {
-                            printf("Nombre de threads a executer: 4\n");
-                        } else if (argOption == 2) {
-                            int nb_threads = pow(2, NB_PERSONNES);
-                            printf("Nombre de threads a executer: %d\n", nb_threads);
-                        } else {    // Cas ou une valeur inferieure a 0 ou superieure a 2 a ete saisie
-                            fprintf(stderr, "Un nombre entre 0 et 2 est attendu pour l'option t\n");
-                            exit(EXIT_FAILURE);
-                        }
-                    } else { // Cas ou la valeur associee a l'option n'est pas un chiffre
-                        fprintf(stderr, "Un nombre entre 0 et 2 est attendu pour l'option t\n");
+                    fprintf(stderr, "Un nombre entre 0 et 2 est attendu pour l'option t\n");
+                    exit(EXIT_FAILURE);
+                } else {
+                    if (NB_THREADS == 0) {
+                        printf("Nombre de threads a executer: 1 \n");
+                    } else if (NB_THREADS == 1) {
+                        printf("Nombre de threads a executer: 4\n");
+                    } else if (NB_THREADS == 2) {
+                        int nb_threads = pow(2, NB_PERSONNES);
+                        printf("Nombre de threads a executer: %d\n", nb_threads);
                     }
                 }
                 break;
