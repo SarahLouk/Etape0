@@ -126,8 +126,9 @@ bool isNotAWall(int x, int y){
 }
 
 
-Personne * init_personnes(bool **terrain, int p){
-    Personne* tab_personnes= (Personne *) malloc(sizeof(Personne) * pow(2,p));
+vector<Personne> init_personnes(bool **terrain, int p){
+
+    vector<Personne> tab_personnes;
     for(int i=0;i<pow(2,p);i++){
         int x=LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
         int y=rand() % (LARGEUR - (TAILLE_P-1));
@@ -136,7 +137,7 @@ Personne * init_personnes(bool **terrain, int p){
             Personne p;
             p._x = x;
             p._y = y;
-            tab_personnes[i]= p;
+            tab_personnes.push_back(p);
             for(int i=x-(TAILLE_P-1);i<=x;i++){
                 for(int j=y-(TAILLE_P-1);j<=y;j++){
                     terrain[i][j] = false;
@@ -149,6 +150,8 @@ Personne * init_personnes(bool **terrain, int p){
 
     return tab_personnes;
 }
+
+//.erase pour gerer arrivé
 
 float azimuth(int x,int y) {
     return (float) sqrt(pow(x, 2) + pow(y - (LARGEUR / 2), 2));
