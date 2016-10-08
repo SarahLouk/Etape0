@@ -301,8 +301,9 @@ void executer (int n_personnes, int n_thread) {
     int i;
     for (i = 1; i <= NB_EXEC; ++i) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
-
-        // On procede a l'initialisation du terrain
+        bool **terrain = creation_terrain();
+        // On procede a l'initialisation des personnes
+        init_personnes(terrain, n_personnes);
         clock_t chronoCPU;
         time_t chronoUtil;
         if (mActivee) {
@@ -317,7 +318,6 @@ void executer (int n_personnes, int n_thread) {
             chronoUtil = time(NULL) - chronoUtil; // On recupere le temps utilisateur ecoule
             tempsExecUser[i] = (double) chronoUtil; // On l'insere dans le tableau des mesures de temps utilisateur
             printf("Temps d'execution user : %2f s.\n", tempsExecUser[i]); // Affichage du temps utilisateur
-
         }
     }
     lancer_statistiques(tempsExecCPU, tempsExecUser); // Lance le traitement des statistiques
