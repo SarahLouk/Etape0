@@ -132,7 +132,7 @@ bool isNotAWall(int x, int y){
 
 
 Personne * init_personnes(bool **terrain, int p){
-    Personne* tab_personnes= (Personne *) malloc(sizeof(Personne) * pow(2,p)+1);
+    Personne* tab_personnes= (Personne *) malloc(sizeof(Personne) * pow(2,p));
     for(int i=0;i<pow(2,p);i++){
         int x=LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
         int y=rand() % (LARGEUR - (TAILLE_P-1));
@@ -153,8 +153,8 @@ Personne * init_personnes(bool **terrain, int p){
     return tab_personnes;
 }
 
-float azimuth(Personne p) {
-    return (float) sqrt(pow(p._x, 2) + pow(p._y - (LARGEUR / 2), 2));
+float azimuth(int x,int y) {
+    return (float) sqrt(pow(x, 2) + pow(y - (LARGEUR / 2), 2));
 }
 
 /*
@@ -164,28 +164,28 @@ int meilleur_coup(Personne p){
     int min =LONGUEUR;
     int c;
     //Nord
-    if(p._y>0 && min> azimuth(Personne(p, p._x,p._y-1))){
-        min = azimuth(Personne(p._x,p._y-1));
+    if(p._y>0 && min> azimuth(p._x,p._y-1)){
+        min = azimuth(p._x,p._y-1);
         c=0;
     }
     //Nord Ouest
-    if(p._x>0 && p._y>0 && min> azimuth(Personne(p._x-1,p._y-1))){
-        min = azimuth(Personne(p._x-1,p._y-1));
+    if(p._x>0 && p._y>0 && min> azimuth(p._x-1,p._y-1)){
+        min = azimuth(p._x-1,p._y-1);
         c=1;
     }
     //Ouest
-    if(p._x>0 && min> azimuth(Personne(p._x-1,p._y))) {
-        min = azimuth(Personne(p._x-1,p._y));
+    if(p._x>0 && min> azimuth(p._x-1,p._y)) {
+        min = azimuth(p._x-1,p._y);
         c=2;
     }
     //Sud Ouest
-    if(p._y<LARGEUR && p._x>0 && min> azimuth(Personne(p._x-1,p._y+1))){
-        min = azimuth(Personne(p._x-1,p._y+1));
+    if(p._y<LARGEUR && p._x>0 && min> azimuth(p._x-1,p._y+1)){
+        min = azimuth(p._x-1,p._y+1);
         c=3;
     }
     //Sud
-    if(p._y<LARGEUR && min> azimuth(Personne(p._x,p._y+1))) {
-        min = azimuth(Personne(p._x,p._y+1));
+    if(p._y<LARGEUR && min> azimuth(p._x,p._y+1)) {
+        min = azimuth(p._x,p._y+1);
         c=4;
     }
 
@@ -201,7 +201,7 @@ int meilleur_coup(Personne p){
 Personne actualise(bool **terrain, Personne p,int dir){
     switch (dir){
         case 0:
-            p = Personne(p._x,p._y-1);
+            p._y --;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p._x-i][p._y] = false;
                 terrain[p._x-i][p._y+TAILLE_P] = true;
@@ -209,7 +209,8 @@ Personne actualise(bool **terrain, Personne p,int dir){
             break;
 
         case 1:
-            p = Personne(p._x-1,p._y-1);
+            p._x--;
+            p._y--;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p._x-i][p._y] = false;
                 terrain[p._x-(i-1)][p._y+TAILLE_P] = true;
@@ -221,7 +222,7 @@ Personne actualise(bool **terrain, Personne p,int dir){
             break;
 
         case 2:
-            p = Personne(p._x-1,p._y);
+            p._x--;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p._x-(TAILLE_P-1)][p._y+i] = false;
                 terrain[p._x+1][p._y+i] = true;
@@ -229,7 +230,8 @@ Personne actualise(bool **terrain, Personne p,int dir){
             break;
 
         case 3:
-            p = Personne(p._x-1,p._y+1);
+            p._x--;
+            p._y++;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p._x-(i-1)][p._y+1] = false;
                 terrain[p._x-i][p._y+(TAILLE_P-1)] = true;
@@ -241,7 +243,7 @@ Personne actualise(bool **terrain, Personne p,int dir){
             break;
 
         case 4:
-            p = Personne(p._x,p._y+1);
+            p._y++;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p._x-i][p._y+(TAILLE_P-1)] = false;
                 terrain[p._x-i][p._y-1] = true;
@@ -256,24 +258,30 @@ Personne actualise(bool **terrain, Personne p,int dir){
 void deplacement(bool **terrain, Personne p){
     int dir = meilleur_coup(p);
     switch (dir){
+        //N
         case 0:
             if(isFree(terrain,p._x,p._y-1)) actualise(terrain,p,0);
+            //else if wait;
             break;
 
+        //NO
         case 1:
             if(isFree(terrain,p._x-1,p._y-1)) actualise(terrain,p,1);
             else if(!isNotAWall(p._x-1,p._y-1)) actualise(terrain,p,0);
             break;
 
+        //O
         case 2:
             if(isFree(terrain,p._x-1,p._y)) actualise(terrain,p,2);
             break;
 
+        //SO
         case 3:
             if(isFree(terrain,p._x-1,p._y+1)) actualise(terrain,p,3);
             else if(!isNotAWall(p._x-1,p._y+11)) actualise(terrain,p,4);
             break;
 
+        //S
         case 4:
             if(isFree(terrain,p._x,p._y+1)) actualise(terrain,p,4);
             break;
