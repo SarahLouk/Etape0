@@ -15,12 +15,11 @@ typedef struct {
 } Personne;
 
 
-Personne personne(Personne p, int x, int y);
 bool** creation_terrain();
 void afficher_matrice(bool ** terrain);
 bool isFree(bool **terrain,int x, int y);
 bool isNotAWall(int x, int y);
-Personne* init_personnes(bool** terrain ,int p);
+vector<Personne> init_personnes(bool** terrain ,int p);
 float azimuth(Personne p);
 int meilleur_coup(Personne p);
 void deplacement(bool **terrain, Personne p);

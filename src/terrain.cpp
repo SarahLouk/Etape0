@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
+#include <bits/stl_vector.h>
 
 #include "terrain.h"
 
@@ -34,11 +35,6 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 
-Personne personne(Personne p, int x, int y) {
-    p._x = x;
-    p._y = y;
-    return p;
-}
 
 /**
     Renvoie la moyenne des valeurs d'un tableau de double, de taille nbExecutions
@@ -64,9 +60,9 @@ void lancer_statistiques(double *executionsCPU, double *executionsUtil) {
 
 bool** creation_terrain() {
     // Creation de la matrice
-    bool **terrain = (bool **) malloc((LONGUEUR+1) * sizeof(bool *));
+    bool **terrain = (bool **) malloc((LONGUEUR) * sizeof(bool *));
     for(int i = 0; i < LONGUEUR; i++) {
-        terrain[i] = (bool *) malloc((LARGEUR+1) * sizeof(bool *));
+        terrain[i] = (bool *) malloc((LARGEUR) * sizeof(bool *));
     }
 
     // Initialisation totale de la matrice a true
@@ -131,15 +127,18 @@ bool isNotAWall(int x, int y){
 }
 
 
-Personne * init_personnes(bool **terrain, int p){
-    Personne* tab_personnes= (Personne *) malloc(sizeof(Personne) * pow(2,p));
+vector<Personne> init_personnes(bool **terrain, int p){
+
+    vector<Personne> tab_personnes;
     for(int i=0;i<pow(2,p);i++){
         int x=LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
         int y=rand() % (LARGEUR - (TAILLE_P-1));
 
         if(isFree(terrain,x,y)){
             Personne p;
-            tab_personnes[i]= personne(p, x, y);
+            p._x = x;
+            p._y = y;
+            tab_personnes.push_back(p);
             for(int i=x-(TAILLE_P-1);i<=x;i++){
                 for(int j=y-(TAILLE_P-1);j<=y;j++){
                     terrain[i][j] = false;
@@ -152,6 +151,8 @@ Personne * init_personnes(bool **terrain, int p){
 
     return tab_personnes;
 }
+
+//.erase pour gerer arrivé
 
 float azimuth(int x,int y) {
     return (float) sqrt(pow(x, 2) + pow(y - (LARGEUR / 2), 2));
