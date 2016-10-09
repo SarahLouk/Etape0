@@ -4,12 +4,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include <unistd.h>
 #include <vector>
 
 #include "terrain.h"
+#include "threads.h"
 
 //Information concernant le terrain
 #define LONGUEUR 512
@@ -39,7 +39,6 @@ bool fin = false;
 int getopt(int argc, char * const argv[],const char *optstring);
 extern char *optarg;
 extern int optind, opterr, optopt;
-
 
 
 /**
@@ -122,11 +121,11 @@ void afficher_matrice(bool **terrain) {
  * (cad qu'il n'existe rien sur la place qu'occuperait une personne)
  */
 bool isFree(bool **terrain,int x, int y){
-    for(int i=x-(TAILLE_P-1);i<=x;i++){
-        for(int j=y-(TAILLE_P-1);j<=y;j++){
-            if(!terrain[i][j]) return false;
-        }
-    }
+  //  for(int i = x-(TAILLE_P-1); i <= x; i++){
+    //    for(int j = y-(TAILLE_P-1); j <= y; j++){
+      //      if(!terrain[i][j]) return false;
+        //}
+    //}
     return true;
 }
 
@@ -152,22 +151,26 @@ vector<Personne> init_personnes(bool **terrain, int p){
     vector<Personne> tab_personnes;
     //Pour chaque personne à créer on va choisir aléatoirement un x et y qui se situeront à l'est des murs
     //et où il est possible de créer une personne à moins que quelqu'un ne soit déja là
-    for(int i=0;i<pow(2,p);i++){
-        int x=LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
-        int y=rand() % (LARGEUR - (TAILLE_P-1));
-
+    for(int i = 0; i < pow(2, p); i++){
+        int x = LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
+        int y = rand() % (LARGEUR - (TAILLE_P-1));
+        cout << "randoms crees" << endl;
         //On regarde si la place est libre pour les x;y pris aléatoirement puis oncrée la personne sur le terrain
-        if(isFree(terrain,x,y)){
+        if(isFree(terrain, x, y)){
+            cout << "entrer dans la boucle" << endl;
             //On crée la personne
             Personne p;
             p._x = x;
             p._y = y;
+            cout << "creation personne" << endl;
             //On stock la personne
             tab_personnes.push_back(p);
+            cout << "stocker personne" << endl;
             //On declare la place de la personne comme occupé maintenant
-            for(int i=x-(TAILLE_P-1);i<=x;i++){
-                for(int j=y-(TAILLE_P-1);j<=y;j++){
+            for(int i = x-(TAILLE_P-1); i <= x; i++){
+                for(int j = y-(TAILLE_P-1); j <= y; j++){
                     terrain[i][j] = false;
+                    cout << "set a false" << endl;
                 }
             }
         }
@@ -358,7 +361,7 @@ bool finScenario(vector<Personne> tab_personnes){
 */
 void executer (int n_personnes, int n_thread) {
     cout << "--------------------------------------------------" << endl;
-    cout << "Lancement du programme avec les options suivantes:\nNombre de personnes = " << n_personnes << "\nNombre de threads = " << n_thread << "\nOption m activee? " << mActivee << endl;
+    cout << "Lancement du programme avec les options suivantes:\nNombre de personnes = " << pow(2, n_personnes) << "\nEtape de threads = " << n_thread << "\nOption m activee? " << mActivee << endl;
     cout << "--------------------------------------------------" << endl;
     double tempsExecCPU[NB_EXEC];   // Tableau contenant les valeurs des temps d'execution CPU
     double tempsExecUser[NB_EXEC];  // Tableau contenant les valeurs des temps d'execution utilisateur
@@ -366,14 +369,17 @@ void executer (int n_personnes, int n_thread) {
     for (i = 1; i <= NB_EXEC; ++i) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
         bool **terrain = creation_terrain();
+        cout << "Terrain cree avec succes" << endl;
         // On procede a l'initialisation des personnes
-        vector<Personne> tab_personnes= init_personnes(terrain, n_personnes);
+        vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
+        cout << "Initialisation avec succes" << endl;
         clock_t chronoCPU;
         time_t chronoUtil;
         //Si m activé on lance le chrono
         if (mActivee) {
             chronoCPU = clock();
             chronoUtil = time(NULL);
+            cout << "Lancement du chrono" << endl;
         }
         // Ici on est censee lancer le deplacement donc l'etape 0
         while(!finScenario(tab_personnes)){
@@ -412,15 +418,14 @@ bool is_number(char *arg) {
     Recupere les options passees au programme et modifie les variables globales en fonction de ces options.
 */
 void get_options(int argc, char ** argv) {
-    int opt, i;
-    while ((opt = getopt(argc, argv, "m:p:t:")) != -1) { // Boucle pour lire les options
+    int opt;
+    while ((opt = getopt(argc, argv, "t:p:m")) != -1) { // Boucle pour lire les options
         switch (opt) {
             case 'p':   // Option pour le nombre de personnes a executer
                 if(is_number(optarg)) { // On verifie que le parametre est bien un nombre
                     int argOption = atoi(optarg);
                     if (argOption >= 0 && argOption < 10) {
                         NB_PERSONNES = argOption; // Nombre d'iterations souhaite
-                        printf("Nombre de personnes: %d\n", NB_PERSONNES);
                     } else {
                         fprintf(stderr, "Un nombre superieur ou egal a 0 et inferieur ou egal a 9 est attendu pour l'option p\n");
                         exit(EXIT_FAILURE);
@@ -430,36 +435,27 @@ void get_options(int argc, char ** argv) {
                     exit(EXIT_FAILURE);
                 }
                 break;
-            case 'm':   // Option activant la mesure de la consomamation du CPU et du temps utilisateur d'execution
-                mActivee = true;
-                break;
             case 't': // Option pour le nombre de threads a lancer
-                NB_THREADS = atoi(optarg);
-                if (NB_THREADS > 2 || !isdigit(NB_THREADS) || NB_THREADS < 0) {
-                    fprintf(stderr, "Trop de valeurs pour l'option t\n");
+                if (atoi(optarg) > 2 ||  atoi(optarg) < 0) {
+                    fprintf(stderr, "Trop de valeurs pour l'option t %d\n", atoi(optarg));
                     fprintf(stderr, "Un nombre entre 0 et 2 est attendu pour l'option t\n");
                     exit(EXIT_FAILURE);
                 } else {
-                    if (NB_THREADS == 0) {
-                        printf("Nombre de threads a executer: 1 \n");
-                    } else if (NB_THREADS == 1) {
-                        printf("Nombre de threads a executer: 4\n");
-                    } else if (NB_THREADS == 2) {
-                        int nb_threads = pow(2, NB_PERSONNES);
-                        printf("Nombre de threads a executer: %d\n", nb_threads);
-                    }
+                    NB_THREADS = atoi(optarg);
                 }
+                break;
+            case 'm':   // Option activant la mesure de la consomamation du CPU et du temps utilisateur d'execution
+                mActivee = true;
                 break;
             default: // Aucune option valable n'a ete reconnue, donc erreur
                 fprintf(stderr, "Cette option n'existe pas: %d\n", opt);
                 exit(EXIT_FAILURE);
-                break;
         }
     }
 }
 
 
-int main() {
-    bool ** terrain = creation_terrain();
-    afficher_matrice(terrain);
+int main(int argc, char *argv[]) {
+    get_options(argc, argv); // Recupere les options du programme
+    executer(NB_PERSONNES, NB_THREADS);
 }
