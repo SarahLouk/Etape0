@@ -129,7 +129,7 @@ void afficher_matrice(bool **terrain) {
  * (cad qu'il n'existe rien sur la place qu'occuperait une personne)
  */
 bool isFree(bool **terrain,int x, int y){
-    for(int i = x-(TAILLE_P-1); i <= x; i++){
+    for(int i = x+(TAILLE_P-1); i <= x; i++){
         for(int j = y-(TAILLE_P-1); j <= y; j++){
             if(!terrain[j][i]) return false;
         }
@@ -157,35 +157,34 @@ bool isNotAWall(int x, int y){
  */
 vector<Personne> init_personnes(bool **terrain, int p){
     vector<Personne> tab_personnes;
+    int c=0;
     //Pour chaque personne à créer on va choisir aléatoirement un x et y qui se situeront à l'est des murs
     //et où il est possible de créer une personne à moins que quelqu'un ne soit déja là
     for(int i = 0; i < pow(2, p); i++){
         int x = LARGEUR + (TAILLE_P-1) + (rand() % (LONGUEUR - y_mur ));
         int y = rand() % (LARGEUR - (TAILLE_P-1));
-        cout << "randoms crees" << endl;
-        //On regarde si la place est libre pour les x;y pris aléatoirement puis oncrée la personne sur le terrain
+        //On regarde si la place est libre pour les x;y pris aléatoirement puis on crée la personne sur le terrain
         if(isFree(terrain, x, y)){
-            cout << "entrer dans la boucle" << endl;
             //On crée la personne
             Personne p;
             p._x = x;
             p._y = y;
-            cout << "creation personne" << endl;
             //On stock la personne
             tab_personnes.push_back(p);
-            cout << "stocker personne" << endl;
-            //On declare la place de la personne comme occupé maintenant
-            for(int i = x-(TAILLE_P-1); i <= x; i++){
+            //On declare la place de la personne comme occuppée maintenant
+            for(int i = x+(TAILLE_P-1); i <= x; i++){
                 for(int j = y-(TAILLE_P-1); j <= y; j++){
                     terrain[j][i] = false;
                 }
             }
+            c++;
         }
 
         //Si la place pour les x,y pris est déja occupé alors on refait un tour de plus
         else i--;
     }
 
+    cout << "c = " << c << endl;
     return tab_personnes;
 }
 
@@ -240,60 +239,59 @@ int meilleur_coup(Personne p){
  * Set a false les nouveaux pixels occupés et true les pixels libérés
  * pour la direction : 0 represente le Nord, 1 le Nord Ouest, 2 l'Ouest, 3 le Sud Ouest et 4 le Sud
  */
-Personne actualise(bool **terrain, Personne p,int dir){
+void actualise(bool **terrain, Personne *p,int dir){
     switch (dir){
         case 0:
-            p._y --;
+            p->_y --;
             for(int i=0;i<TAILLE_P;i++){
-                terrain[p._x-i][p._y] = false;
-                terrain[p._x-i][p._y+TAILLE_P] = true;
+                terrain[p->_y][p->_x-i] = false;
+                terrain[p->_y+TAILLE_P][p->_x-i] = true;
             }
             break;
 
         case 1:
-            p._x--;
-            p._y--;
+            p->_x--;
+            p->_y--;
             for(int i=0;i<TAILLE_P;i++){
-                terrain[p._x-i][p._y] = false;
-                terrain[p._x-(i-1)][p._y+TAILLE_P] = true;
+                terrain[p->_y][p->_x-i] = false;
+                terrain[p->_y+TAILLE_P][p->_x-(i-1)] = true;
             }
             for(int i=1;i<TAILLE_P;i++){
-                terrain[p._x-(TAILLE_P-1)][p._y+i] = false;
-                terrain[p._x+1][p._y+i] = true;
+                terrain[p->_y+i][p->_x-(TAILLE_P-1)] = false;
+                terrain[p->_y+i][p->_x+1] = true;
             }
             break;
 
         case 2:
-            p._x--;
+            p->_x--;
             for(int i=0;i<TAILLE_P;i++){
-                terrain[p._x-(TAILLE_P-1)][p._y+i] = false;
-                terrain[p._x+1][p._y+i] = true;
+                terrain[p->_y+i][p->_x-(TAILLE_P-1)] = false;
+                terrain[p->_y+i][p->_x+1] = true;
             }
             break;
 
         case 3:
-            p._x--;
-            p._y++;
+            p->_x--;
+            p->_y++;
             for(int i=0;i<TAILLE_P;i++){
-                terrain[p._x-(i-1)][p._y+1] = false;
-                terrain[p._x-i][p._y+(TAILLE_P-1)] = true;
+                terrain[p->_y+1][p->_x-(i-1)] = false;
+                terrain[p->_y+(TAILLE_P-1)][p->_x-i] = true;
             }
             for(int i=0;i<TAILLE_P-1;i++){
-                terrain[p._x+1][p._y+i] = false;
-                terrain[p._x-(TAILLE_P-1)][p._y+i] = true;
+                terrain[p->_y+i][p->_x+1] = false;
+                terrain[p->_y+i][p->_x-(TAILLE_P-1)] = true;
             }
             break;
 
         case 4:
-            p._y++;
+            p->_y++;
             for(int i=0;i<TAILLE_P;i++){
-                terrain[p._x-i][p._y+(TAILLE_P-1)] = false;
-                terrain[p._x-i][p._y-1] = true;
+                terrain[p->_y+(TAILLE_P-1)][p->_x-i] = false;
+                terrain[p->_y-1][p->_x-i] = true;
             }
             break;
     }
 
-    return p;
 }
 
 Personne test(Personne *p) {
@@ -314,33 +312,61 @@ void deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
     switch (dir){
         //N
         case 0:
-            if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)) actualise(terrain,tab_personnes[i],0);
+            cout << "0" << endl;
+            if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)){
+                actualise(terrain,&tab_personnes[i],0);
+                //tab_personnes[i]._y --;
+            }
             break;
 
             //NO
         case 1:
-            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y-1)) actualise(terrain,tab_personnes[i],1);
-            else if(!isNotAWall(tab_personnes[i]._x-1,tab_personnes[i]._y-1) && isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)) actualise(terrain,tab_personnes[i],0);
+            cout << "1" << endl;
+            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y-1)) {
+                actualise(terrain,&tab_personnes[i],1);
+                //tab_personnes[i]._x --;
+                //tab_personnes[i]._y --;
+            }
+            else if(!isNotAWall(tab_personnes[i]._x-1,tab_personnes[i]._y-1) && isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)) {
+                actualise(terrain,&tab_personnes[i],0);
+                //tab_personnes[i]._y --;
+            }
             break;
 
             //O
         case 2:
-            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y)) actualise(terrain,tab_personnes[i],2);
+            cout << "2" << endl;
+            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y)) {
+                actualise(terrain,&tab_personnes[i],2);
+                //tab_personnes[i]._x --;
+            }
             else if(tab_personnes[i]._x==3){
                 tab_personnes.erase(tab_personnes.begin()+(i-1));
-                free(terrain,tab_personnes[i]._x,tab_personnes[i]._y);
+                //free(terrain,tab_personnes[i]._x,tab_personnes[i]._y);
             }
             break;
 
             //SO
         case 3:
-            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y+1)) actualise(terrain,tab_personnes[i],3);
-            else if(!isNotAWall(tab_personnes[i]._x-1,tab_personnes[i]._y+1) && isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) actualise(terrain,tab_personnes[i],4);
+            cout << "3" << endl;
+            if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y+1)) {
+                actualise(terrain,&tab_personnes[i],3);
+                //tab_personnes[i]._x --;
+                //tab_personnes[i]._y ++;
+            }
+            else if(!isNotAWall(tab_personnes[i]._x-1,tab_personnes[i]._y+1) && isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) {
+                actualise(terrain,&tab_personnes[i],4);
+                //tab_personnes[i]._y ++;
+            }
             break;
 
             //S
         case 4:
-            if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) actualise(terrain,tab_personnes[i],4);
+            cout << "4" << endl;
+            if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) {
+                actualise(terrain,&tab_personnes[i],4);
+                //tab_personnes[i]._y ++;
+            }
             break;
     }
 
@@ -352,7 +378,7 @@ void deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 void free(bool **terrain,int x, int y){
     for(int i=x-(TAILLE_P-1);i<=x;i++){
         for(int j=y-(TAILLE_P-1);j<=y;j++){
-            terrain[i][j]=true;
+            terrain[j][i]=true;
         }
     }
 }
@@ -397,10 +423,10 @@ void executer (int n_personnes, int n_thread) {
     int i;
     for (i = 0; i < NB_EXEC; i++) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
-        //bool **terrain = creation_terrain();
+        bool **terrain = creation_terrain();
         cout << "Terrain cree avec succes" << endl;
         // On procede a l'initialisation des personnes
-        //vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
+        vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
         cout << "Initialisation avec succes" << endl;
         clock_t chronoCPU;
         time_t chronoUtil;
@@ -413,14 +439,14 @@ void executer (int n_personnes, int n_thread) {
         }
         etape1(n_thread);
         // Ici on est censee lancer le deplacement donc l'etape 0
-       /* while(!finScenario(tab_personnes)){
-            //cout << "Scenario pas encore fini" << endl;
-            //for(int i=0;i<tab_personnes.size();i++){
-                //cout << "deplacement" << endl;
-                deplacement(terrain,tab_personnes,0);
-                //cout << "deplacement reussie" << endl;
-            //}
-        }*/
+        cout << "size tab_personnes = " << tab_personnes.size() << endl;
+        while(!finScenario(tab_personnes)){
+            for(int i=0;i<tab_personnes.size();i++){
+                cout<<"personne " << i << " x = " << tab_personnes[i]._x << endl;
+                cout<< " y = " << tab_personnes[i]._y << endl;
+                deplacement(terrain,tab_personnes,i);
+            }
+        }
 
         if (mActivee) { // Si option m activee
             chronoCPU = clock() - chronoCPU; // On recupere le temps CPU ecoule pour cette execution
@@ -491,14 +517,15 @@ void get_options(int argc, char ** argv) {
 
 int main(int argc, char *argv[]) {
     get_options(argc, argv); // Recupere les options du programme
-    int p = 2;
+    executer(NB_PERSONNES, NB_THREADS);
+/*    int p = 2;
     while( p != 8 ) {
         for(int i = 0; i < 3; i++) {
             p = pow(2, i+1);
             cout << p << i << endl;
             executer(p, i);
         }
-    }
+    }*/
 
    /* Personne pers;
     Personne *personne = &pers;
@@ -509,6 +536,5 @@ int main(int argc, char *argv[]) {
     cout << "Test personne: " << testPersonne._x << testPersonne._y << endl;
 
     cout << "personne: " << personne->_x << personne->_y << endl;*/
-
 
 }
