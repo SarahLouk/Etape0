@@ -68,14 +68,14 @@ void lancer_statistiques(double *executionsCPU, double *executionsUtil) {
  */
 bool** creation_terrain() {
     // Creation de la matrice
-    bool **terrain = (bool **) malloc((LONGUEUR) * sizeof(bool *));
-    for(int i = 0; i < LONGUEUR; i++) {
-        terrain[i] = (bool *) malloc((LARGEUR) * sizeof(bool *));
+    bool **terrain = (bool **) malloc((LARGEUR) * sizeof(bool *));
+    for(int i = 0; i < LARGEUR; i++) {
+        terrain[i] = (bool *) malloc((LONGUEUR) * sizeof(bool *));
     }
 
     // Initialisation totale de la matrice a true
-    for(int i = 0; i < LONGUEUR; i++) {
-        for(int j = 0; j < LARGEUR; j++) {
+    for(int i = 0; i < LARGEUR; i++) {
+        for(int j = 0; j < LONGUEUR; j++) {
             terrain[i][j] = true;
         }
     }
@@ -83,20 +83,20 @@ bool** creation_terrain() {
     // Creation du mur1
     for(int i = 0; i < x_mur1; i++) {
         for(int j = 0; j < y_mur1_haut; j++) {
-            terrain[i][j] = false;
+            terrain[j][i] = false;
         }
         for(int k = y_mur1_bas; k < y_mur; k++) {
-            terrain[i][k] = false;
+            terrain[k][i] = false;
         }
     }
 
     // Creation du mur2
     for(int i = x_mur2; i < x_mur2_fin; i++) {
         for(int j = 0; j < y_mur2_haut; j++) {
-            terrain[i][j] = false;
+            terrain[j][i] = false;
         }
         for(int k = y_mur2_bas; k < y_mur; k++) {
-            terrain[i][k] = false;
+            terrain[k][i] = false;
         }
     }
 
@@ -107,8 +107,8 @@ bool** creation_terrain() {
  * Affichage du terrain
  */
 void afficher_matrice(bool **terrain) {
-    for(int i = 0; i < LONGUEUR; i++) {
-        for(int j = 0; j < LARGEUR; j++) {
+    for(int i = 0; i < LARGEUR; i++) {
+        for(int j = 0; j < LONGUEUR; j++) {
             cout << terrain[i][j] << " ";
         }
         cout << endl;
@@ -456,6 +456,9 @@ void get_options(int argc, char ** argv) {
 
 
 int main(int argc, char *argv[]) {
-    get_options(argc, argv); // Recupere les options du programme
-    executer(NB_PERSONNES, NB_THREADS);
+    //get_options(argc, argv); // Recupere les options du programme
+    //executer(NB_PERSONNES, NB_THREADS);
+    bool ** terrain = creation_terrain();
+    afficher_matrice(terrain);
+
 }
