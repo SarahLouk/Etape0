@@ -161,7 +161,7 @@ vector<Personne> init_personnes(bool **terrain, int p){
     //Pour chaque personne à créer on va choisir aléatoirement un x et y qui se situeront à l'est des murs
     //et où il est possible de créer une personne à moins que quelqu'un ne soit déja là
     for(int i = 0; i < pow(2, p); i++){
-        int x = LARGEUR + (TAILLE_P-1) + (rand() % (LONGUEUR - y_mur ));
+        int x = LARGEUR + (TAILLE_P-1) + (rand() % (LONGUEUR - y_mur -(TAILLE_P-1)));
         int y = rand() % (LARGEUR - (TAILLE_P-1));
         //On regarde si la place est libre pour les x;y pris aléatoirement puis on crée la personne sur le terrain
         if(isFree(terrain, x, y)){
@@ -202,7 +202,7 @@ float azimuth(int x,int y) {
  * Retourne 0 si le meilleur mouvement est au Nord, 1 si au Nord Ouest, 2 si à l'Ouest, 3 si au Sud, 4 si au Sud
  */
 int meilleur_coup(Personne p){
-    int min =LONGUEUR;
+    int min =LONGUEUR*LARGEUR;
     int c;
     //Nord
     if(p._y>0 && min> azimuth(p._x,p._y-1)){
@@ -251,9 +251,7 @@ void actualise(bool **terrain, Personne *p,int dir){
 
         case 1:
             (p)->_x--;
-            cout << "x: " << (p)->_x << endl;
             (p)->_y--;
-            cout << "y: " << (p)->_y << endl;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[(p)->_y][(p)->_x-i] = false;
                 terrain[(p)->_y+TAILLE_P][(p)->_x-(i-1)] = true;
@@ -314,6 +312,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
     switch (dir){
         //N
         case 0:
+            cout << "0" << endl;
             if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)){
                 actualise(terrain,&tab_personnes[i],0);
             }
@@ -321,6 +320,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //NO
         case 1:
+            cout << "1" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y-1)) {
                 actualise(terrain,&tab_personnes[i],1);
             }
@@ -331,6 +331,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //O
         case 2:
+            cout << "2" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y)) {
                 actualise(terrain,&tab_personnes[i],2);
             }
@@ -338,6 +339,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //SO
         case 3:
+            cout << "3" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y+1)) {
                 actualise(terrain,&tab_personnes[i],3);
             }
@@ -348,6 +350,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //S
         case 4:
+            cout << "4" << endl;
             if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) {
                 actualise(terrain,&tab_personnes[i],4);
             }
@@ -425,11 +428,11 @@ void executer (int n_personnes, int n_thread) {
         }
         //etape1(n_thread);
         // Ici on est censee lancer le deplacement donc l'etape 0
-        cout << "size tab_personnes = " << tab_personnes.size() << endl;
         while(!finScenario(tab_personnes)){
             for(int i = 0; i < tab_personnes.size(); i++){
-                cout<<"personne " << i << " x = " << tab_personnes[i]._x << endl;
-                cout<< " y = " << tab_personnes[i]._y << endl;
+                cout << "personne " << i << endl;
+                cout << "x = " << tab_personnes[i]._x<< endl;
+                cout << "y = " << tab_personnes[i]._y<< endl;
                 if(tab_personnes[i]._x==3){
                     terrain = Libere(terrain,tab_personnes[i]._x,tab_personnes[i]._y);
                     for(int j=i;j<tab_personnes.size()-1;j++){
@@ -437,7 +440,9 @@ void executer (int n_personnes, int n_thread) {
                     }
                     tab_personnes.resize(tab_personnes.size()-1);
                 }
-                else tab_personnes[i] = deplacement(terrain, tab_personnes, i);
+                else {
+                    tab_personnes[i] = deplacement(terrain, tab_personnes, i);
+                }
             }
         }
 
@@ -509,9 +514,9 @@ void get_options(int argc, char ** argv) {
 
 
 int main(int argc, char *argv[]) {
-
     get_options(argc, argv); // Recupere les options du programme
     executer(NB_PERSONNES, NB_THREADS);
+
 /*    int p = 2;
     while( p != 8 ) {
         for(int i = 0; i < 3; i++) {
