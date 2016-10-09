@@ -121,11 +121,11 @@ void afficher_matrice(bool **terrain) {
  * (cad qu'il n'existe rien sur la place qu'occuperait une personne)
  */
 bool isFree(bool **terrain,int x, int y){
-  //  for(int i = x-(TAILLE_P-1); i <= x; i++){
-    //    for(int j = y-(TAILLE_P-1); j <= y; j++){
-      //      if(!terrain[i][j]) return false;
-        //}
-    //}
+    for(int i = x-(TAILLE_P-1); i <= x; i++){
+        for(int j = y-(TAILLE_P-1); j <= y; j++){
+            if(!terrain[j][i]) return false;
+        }
+    }
     return true;
 }
 
@@ -152,7 +152,7 @@ vector<Personne> init_personnes(bool **terrain, int p){
     //Pour chaque personne à créer on va choisir aléatoirement un x et y qui se situeront à l'est des murs
     //et où il est possible de créer une personne à moins que quelqu'un ne soit déja là
     for(int i = 0; i < pow(2, p); i++){
-        int x = LONGUEUR + rand() % (LONGUEUR-y_mur + (TAILLE_P-1));
+        int x = LARGEUR + (TAILLE_P-1) + (rand() % (LONGUEUR - y_mur ));
         int y = rand() % (LARGEUR - (TAILLE_P-1));
         cout << "randoms crees" << endl;
         //On regarde si la place est libre pour les x;y pris aléatoirement puis oncrée la personne sur le terrain
@@ -169,8 +169,7 @@ vector<Personne> init_personnes(bool **terrain, int p){
             //On declare la place de la personne comme occupé maintenant
             for(int i = x-(TAILLE_P-1); i <= x; i++){
                 for(int j = y-(TAILLE_P-1); j <= y; j++){
-                    terrain[i][j] = false;
-                    cout << "set a false" << endl;
+                    terrain[j][i] = false;
                 }
             }
         }
@@ -457,8 +456,8 @@ void get_options(int argc, char ** argv) {
 
 int main(int argc, char *argv[]) {
     //get_options(argc, argv); // Recupere les options du programme
-    //executer(NB_PERSONNES, NB_THREADS);
-    bool ** terrain = creation_terrain();
-    afficher_matrice(terrain);
+    executer(NB_PERSONNES, NB_THREADS);
+    //bool ** terrain = creation_terrain();
+    //afficher_matrice(terrain);
 
 }
