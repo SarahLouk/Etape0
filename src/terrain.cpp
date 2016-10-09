@@ -167,8 +167,8 @@ vector<Personne> init_personnes(bool **terrain, int p){
         if(isFree(terrain, x, y)){
             //On crée la personne
             Personne p;
-            p._x = x;
-            p._y = y;
+            Personne *pers = &p;
+            creation_personne(pers, x, y);
             //On stock la personne
             tab_personnes.push_back(p);
             //On declare la place de la personne comme occuppée maintenant
@@ -251,7 +251,9 @@ void actualise(bool **terrain, Personne *p,int dir){
 
         case 1:
             p->_x--;
+            cout << "x: " << p->_x << endl;
             p->_y--;
+            cout << "y: " << p->_y << endl;
             for(int i=0;i<TAILLE_P;i++){
                 terrain[p->_y][p->_x-i] = false;
                 terrain[p->_y+TAILLE_P][p->_x-(i-1)] = true;
@@ -427,6 +429,7 @@ void executer (int n_personnes, int n_thread) {
         cout << "Terrain cree avec succes" << endl;
         // On procede a l'initialisation des personnes
         vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
+        vector<Personne> *ref_tab_personnes = &tab_personnes;
         cout << "Initialisation avec succes" << endl;
         clock_t chronoCPU;
         time_t chronoUtil;
@@ -437,14 +440,14 @@ void executer (int n_personnes, int n_thread) {
             chronoUtil = time(NULL);
             cout << "Lancement du chrono" << endl;
         }
-        etape1(n_thread);
+        //etape1(n_thread);
         // Ici on est censee lancer le deplacement donc l'etape 0
         cout << "size tab_personnes = " << tab_personnes.size() << endl;
         while(!finScenario(tab_personnes)){
-            for(int i=0;i<tab_personnes.size();i++){
-                cout<<"personne " << i << " x = " << tab_personnes[i]._x << endl;
-                cout<< " y = " << tab_personnes[i]._y << endl;
-                deplacement(terrain,tab_personnes,i);
+            for(int i = 0; i < tab_personnes.size(); i++){
+               // cout<<"personne " << i << " x = " << tab_personnes[i]._x << endl;
+                //cout<< " y = " << tab_personnes[i]._y << endl;
+                deplacement(terrain, tab_personnes, i);
             }
         }
 
@@ -516,8 +519,16 @@ void get_options(int argc, char ** argv) {
 
 
 int main(int argc, char *argv[]) {
-    get_options(argc, argv); // Recupere les options du programme
-    executer(NB_PERSONNES, NB_THREADS);
+    bool ** terrain = creation_terrain();
+    Personne p;
+    Personne *pers = &p;
+    creation_personne(pers, 0, 0);
+    actualise(terrain, pers, 1);
+    cout << "new x: " << p._x << endl;
+    cout << "new y: " << p._y << endl;
+
+    //get_options(argc, argv); // Recupere les options du programme
+    //executer(NB_PERSONNES, NB_THREADS);
 /*    int p = 2;
     while( p != 8 ) {
         for(int i = 0; i < 3; i++) {
