@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./bin/terrain -t0 -p9 -m
+./bin/terrain -t0 -p1 -m

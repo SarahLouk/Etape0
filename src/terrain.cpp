@@ -41,6 +41,14 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 
+void creation_personne(Personne *p, int x, int y) {
+    cout << "creation personne: " << endl;
+    p->_x = x;
+    p->_y = y;
+    cout << " x : " << p->_x << endl;
+    cout << " y : " << p->_y << endl;
+}
+
 /**
     Renvoie la moyenne des valeurs d'un tableau de double, de taille nbExecutions
 */
@@ -288,6 +296,12 @@ Personne actualise(bool **terrain, Personne p,int dir){
     return p;
 }
 
+Personne test(Personne *p) {
+    p->_x --;
+    p->_y ++;
+    return *p;
+}
+
 
 /*
  * Gère le déplacement et arrivé d'une personne
@@ -355,6 +369,22 @@ bool finScenario(vector<Personne> tab_personnes){
 }
 
 
+void etape1(int n_thread) {
+    switch(n_thread) {
+        case 0:
+            cout << "T0" << endl;
+            break;
+        case 1:
+            cout << "T1" << endl;
+            break;
+        case 2:
+            cout << "T2" << endl;
+            break;
+        default:
+            break;
+    }
+}
+
 /**
     Lance les scenarios
 */
@@ -365,27 +395,32 @@ void executer (int n_personnes, int n_thread) {
     double tempsExecCPU[NB_EXEC];   // Tableau contenant les valeurs des temps d'execution CPU
     double tempsExecUser[NB_EXEC];  // Tableau contenant les valeurs des temps d'execution utilisateur
     int i;
-    for (i = 1; i <= NB_EXEC; ++i) {    // Boucle pour lancer le bon nombre d'executions
+    for (i = 0; i < NB_EXEC; i++) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
-        bool **terrain = creation_terrain();
+        //bool **terrain = creation_terrain();
         cout << "Terrain cree avec succes" << endl;
         // On procede a l'initialisation des personnes
-        vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
+        //vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
         cout << "Initialisation avec succes" << endl;
         clock_t chronoCPU;
         time_t chronoUtil;
         //Si m activé on lance le chrono
+        cout << "activee" << mActivee << endl;
         if (mActivee) {
             chronoCPU = clock();
             chronoUtil = time(NULL);
             cout << "Lancement du chrono" << endl;
         }
+        etape1(n_thread);
         // Ici on est censee lancer le deplacement donc l'etape 0
-        while(!finScenario(tab_personnes)){
-            for(int i=0;i<tab_personnes.size();i++){
-                deplacement(terrain,tab_personnes,i);
-            }
-        }
+       /* while(!finScenario(tab_personnes)){
+            //cout << "Scenario pas encore fini" << endl;
+            //for(int i=0;i<tab_personnes.size();i++){
+                //cout << "deplacement" << endl;
+                deplacement(terrain,tab_personnes,0);
+                //cout << "deplacement reussie" << endl;
+            //}
+        }*/
 
         if (mActivee) { // Si option m activee
             chronoCPU = clock() - chronoCPU; // On recupere le temps CPU ecoule pour cette execution
@@ -455,9 +490,25 @@ void get_options(int argc, char ** argv) {
 
 
 int main(int argc, char *argv[]) {
-    //get_options(argc, argv); // Recupere les options du programme
-    executer(NB_PERSONNES, NB_THREADS);
-    //bool ** terrain = creation_terrain();
-    //afficher_matrice(terrain);
+    get_options(argc, argv); // Recupere les options du programme
+    int p = 2;
+    while( p != 8 ) {
+        for(int i = 0; i < 3; i++) {
+            p = pow(2, i+1);
+            cout << p << i << endl;
+            executer(p, i);
+        }
+    }
+
+   /* Personne pers;
+    Personne *personne = &pers;
+    creation_personne(personne, 0, 0);
+    cout << "personne: " << personne->_x << personne->_y << endl;
+
+    Personne testPersonne = test(personne);
+    cout << "Test personne: " << testPersonne._x << testPersonne._y << endl;
+
+    cout << "personne: " << personne->_x << personne->_y << endl;*/
+
 
 }
