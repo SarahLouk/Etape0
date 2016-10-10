@@ -1,6 +1,9 @@
-//
-// Created by user on 07/10/16.
-//
+/*
+ * Sarah LOUKHMI & Thomas de la Red
+ * SI4 Groupe 1
+ * 1O/10/2016
+ * Etape1
+ */
 
 #ifndef ETAPE0_TERRAIN_H
 #define ETAPE0_TERRAIN_H
@@ -15,7 +18,14 @@ typedef struct {
     bool sorti = false;
 } Personne;
 
+typedef struct {
+    vector<Personne> *personnes;
+    bool ***terrain;
+    pthread_barrier_t* barriere_thread;
+    pthread_barrier_t* barriere_all;
+} Thread_Param;
 
+void init_param_thread(Thread_Param* tp, vector<Personne>* p, bool *** terrain, pthread_barrier_t* barriere, pthread_barrier_t* barriereAll);
 void creation_personne(Personne *p, int x, int y);
 bool** creation_terrain();
 void afficher_matrice(bool ** terrain);

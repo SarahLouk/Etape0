@@ -1,6 +1,9 @@
-//
-// Created by user on 07/10/16.
-//
+/*
+ * Sarah LOUKHMI & Thomas de la Red
+ * SI4 Groupe 1
+ * 10/10/2016
+ * Etape1
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,7 +12,6 @@
 #include <vector>
 
 #include "terrain.h"
-#include "threads.h"
 
 //Information concernant le terrain
 #define LONGUEUR 512
@@ -35,18 +37,26 @@ bool mActivee = false;
 
 //Fin du scénario
 bool fin = false;
+int THREADS[3] = {1, 4, NB_PERSONNES};  // Tableau des nombres de threads a creer
 
 int getopt(int argc, char * const argv[],const char *optstring);
 extern char *optarg;
 extern int optind, opterr, optopt;
 
 
+void init_param_thread(Thread_Param* tp, vector<Personne>* p, bool*** terrain, pthread_barrier_t* barriere, pthread_barrier_t* barriereAll) {
+    tp->personnes = p;
+    tp->terrain = terrain;
+    tp->barriere_thread = barriere;
+    tp->barriere_all = barriereAll;
+}
+
 void creation_personne(Personne *p, int x, int y) {
-    cout << "creation personne: " << endl;
+    //cout << "creation personne: " << endl;
     p->_x = x;
     p->_y = y;
-    cout << " x : " << p->_x << endl;
-    cout << " y : " << p->_y << endl;
+    //cout << " x : " << p->_x << endl;
+    //cout << " y : " << p->_y << endl;
 }
 
 /**
@@ -294,13 +304,6 @@ void actualise(bool **terrain, Personne *p,int dir){
 
 }
 
-Personne test(Personne *p) {
-    p->_x --;
-    p->_y ++;
-    return *p;
-}
-
-
 /*
  * Gère le déplacement et arrivé d'une personne
  * Avance dans la meilleure direction possible sinon attend que la place se libère
@@ -312,7 +315,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
     switch (dir){
         //N
         case 0:
-            cout << "0" << endl;
+            //cout << "0" << endl;
             if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y-1)){
                 actualise(terrain,&tab_personnes[i],0);
             }
@@ -320,7 +323,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //NO
         case 1:
-            cout << "1" << endl;
+            //cout << "1" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y-1)) {
                 actualise(terrain,&tab_personnes[i],1);
             }
@@ -331,7 +334,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //O
         case 2:
-            cout << "2" << endl;
+            //cout << "2" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y)) {
                 actualise(terrain,&tab_personnes[i],2);
             }
@@ -339,7 +342,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //SO
         case 3:
-            cout << "3" << endl;
+            //cout << "3" << endl;
             if(isFree(terrain,tab_personnes[i]._x-1,tab_personnes[i]._y+1)) {
                 actualise(terrain,&tab_personnes[i],3);
             }
@@ -350,7 +353,7 @@ Personne deplacement(bool **terrain, vector<Personne> tab_personnes, int i){
 
             //S
         case 4:
-            cout << "4" << endl;
+            //cout << "4" << endl;
             if(isFree(terrain,tab_personnes[i]._x,tab_personnes[i]._y+1)) {
                 actualise(terrain,&tab_personnes[i],4);
             }
@@ -383,21 +386,58 @@ bool finScenario(vector<Personne> tab_personnes){
     return false;
 }
 
-
-void etape1(int n_thread) {
-    switch(n_thread) {
-        case 0:
-            cout << "T0" << endl;
-            break;
-        case 1:
-            cout << "T1" << endl;
-            break;
-        case 2:
-            cout << "T2" << endl;
-            break;
-        default:
-            break;
+void* boucle_thread1(void* arg){
+    Thread_Param* tp = (Thread_Param*) arg;
+    vector<Personne> tab_personnes = *(tp->personnes);
+    bool ** terrain = *(tp->terrain);
+    while(!finScenario(tab_personnes)){
+        for(int i = 0; i < tab_personnes.size(); i++){
+            //cout << "personne " << i << endl;
+            //cout << "x = " << tab_personnes[i]._x<< endl;
+            //cout << "y = " << tab_personnes[i]._y<< endl;
+            if(tab_personnes[i]._x==3){
+                terrain = Libere(terrain,tab_personnes[i]._x,tab_personnes[i]._y);
+                for(int j=i;j<tab_personnes.size()-1;j++){
+                    tab_personnes[i]=tab_personnes[j+1];
+                }
+                tab_personnes.resize(tab_personnes.size()-1);
+            }
+            else {
+                tab_personnes[i] = deplacement(terrain, tab_personnes, i);
+            }
+        }
     }
+    pthread_barrier_wait(tp->barriere_all);
+    pthread_exit(0);
+    return NULL;
+}
+
+void etape1(vector<Personne> * vp, bool *** terrain, int n_thread) {
+    pthread_barrier_t *barrier_thread = (pthread_barrier_t *) malloc(sizeof(pthread_barrier_t));
+    if (barrier_thread == NULL) {
+        fprintf(stderr, "Allocation impossible \n");
+        exit(EXIT_FAILURE);
+    }
+    pthread_barrier_t *barrier_all = (pthread_barrier_t *) malloc(sizeof(pthread_barrier_t));
+    if (barrier_all == NULL) {
+        fprintf(stderr, "Allocation impossible \n");
+        exit(EXIT_FAILURE);
+    }
+    pthread_t *tab_thread[THREADS[n_thread]];
+    Thread_Param *thread_p[THREADS[n_thread]];
+    pthread_barrier_init(barrier_thread, NULL, THREADS[n_thread]);
+    pthread_barrier_init(barrier_all, NULL, THREADS[n_thread]);
+    for (int t = 0; t < THREADS[n_thread]; t++) { // creation du nombre de threads necessaire
+        tab_thread[t] = (pthread_t *) malloc(sizeof(pthread_t));
+        thread_p[t] = (Thread_Param *) malloc(sizeof(Thread_Param));
+        if (thread_p[t] == NULL) {
+            fprintf(stderr, "Allocation impossible\n");
+            exit(EXIT_FAILURE);
+        }
+        init_param_thread(thread_p[t], vp, terrain, barrier_thread, barrier_all);
+        pthread_create(tab_thread[t], NULL, boucle_thread1, (void *) thread_p[t]);
+    }
+    pthread_barrier_wait(barrier_all);
 }
 
 /**
@@ -413,9 +453,11 @@ void executer (int n_personnes, int n_thread) {
     for (i = 0; i < NB_EXEC; i++) {    // Boucle pour lancer le bon nombre d'executions
         // On doit creer la matrice ici
         bool **terrain = creation_terrain();
+        bool ***ptr_terrain = &terrain;
         cout << "Terrain cree avec succes" << endl;
         // On procede a l'initialisation des personnes
         vector<Personne> tab_personnes = init_personnes(terrain, n_personnes);
+        vector<Personne> *ptr_tab_personnes = &tab_personnes;
         cout << "Initialisation avec succes" << endl;
         clock_t chronoCPU;
         time_t chronoUtil;
@@ -426,26 +468,7 @@ void executer (int n_personnes, int n_thread) {
             chronoUtil = time(NULL);
             cout << "Lancement du chrono" << endl;
         }
-        //etape1(n_thread);
-        // Ici on est censee lancer le deplacement donc l'etape 0
-        while(!finScenario(tab_personnes)){
-            for(int i = 0; i < tab_personnes.size(); i++){
-                cout << "personne " << i << endl;
-                cout << "x = " << tab_personnes[i]._x<< endl;
-                cout << "y = " << tab_personnes[i]._y<< endl;
-                if(tab_personnes[i]._x==3){
-                    terrain = Libere(terrain,tab_personnes[i]._x,tab_personnes[i]._y);
-                    for(int j=i;j<tab_personnes.size()-1;j++){
-                        tab_personnes[i]=tab_personnes[j+1];
-                    }
-                    tab_personnes.resize(tab_personnes.size()-1);
-                }
-                else {
-                    tab_personnes[i] = deplacement(terrain, tab_personnes, i);
-                }
-            }
-        }
-
+        etape1(ptr_tab_personnes, ptr_terrain, n_thread);
         if (mActivee) { // Si option m activee
             chronoCPU = clock() - chronoCPU; // On recupere le temps CPU ecoule pour cette execution
             tempsExecCPU[i] = (double) chronoCPU/ CLOCKS_PER_SEC; // On place ce temps dans le tableau des mesures de temps CPU
@@ -483,7 +506,7 @@ void get_options(int argc, char ** argv) {
                 if(is_number(optarg)) { // On verifie que le parametre est bien un nombre
                     int argOption = atoi(optarg);
                     if (argOption >= 0 && argOption < 10) {
-                        NB_PERSONNES = argOption; // Nombre d'iterations souhaite
+                        NB_PERSONNES = pow(2, argOption);
                     } else {
                         fprintf(stderr, "Un nombre superieur ou egal a 0 et inferieur ou egal a 9 est attendu pour l'option p\n");
                         exit(EXIT_FAILURE);
