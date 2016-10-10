@@ -255,13 +255,18 @@ void actualise(bool **terrain, Personne *p,int dir){
             p->_y--;
             cout << "y: " << p->_y << endl;
             for(int i=0;i<TAILLE_P;i++){
+                cout << "finish1" << endl;
                 terrain[p->_y][p->_x-i] = false;
+                cout << "finish1.1" << endl;
                 terrain[p->_y+TAILLE_P][p->_x-(i-1)] = true;
+
             }
             for(int i=1;i<TAILLE_P;i++){
+                cout << "finish2" << endl;
                 terrain[p->_y+i][p->_x-(TAILLE_P-1)] = false;
                 terrain[p->_y+i][p->_x+1] = true;
             }
+            cout << "finish3" << endl;
             break;
 
         case 2:
@@ -524,8 +529,14 @@ int main(int argc, char *argv[]) {
     Personne *pers = &p;
     creation_personne(pers, 0, 0);
     actualise(terrain, pers, 1);
-    cout << "new x: " << p._x << endl;
-    cout << "new y: " << p._y << endl;
+    cout << "new x: " << pers->_x << endl;
+    cout << "new y: " << pers->_y << endl;
+    vector<Personne> tab_personnes;
+    tab_personnes.push_back(p);
+    cout << "deplacement" << endl;
+    deplacement(terrain, tab_personnes, 1);
+    cout << "deplacement x : " << p._x << endl;
+    cout << "deplacement y : " << p._y << endl;
 
     //get_options(argc, argv); // Recupere les options du programme
     //executer(NB_PERSONNES, NB_THREADS);
