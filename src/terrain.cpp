@@ -180,7 +180,7 @@ vector<Personne> init_personnes(bool **terrain, int p){
             c++;
         }
 
-        //Si la place pour les x,y pris est déja occupé alors on refait un tour de plus
+            //Si la place pour les x,y pris est déja occupé alors on refait un tour de plus
         else i--;
     }
 
@@ -253,18 +253,13 @@ void actualise(bool **terrain, Personne *p,int dir){
             (p)->_x--;
             (p)->_y--;
             for(int i=0;i<TAILLE_P;i++){
-                cout << "finish1" << endl;
-                terrain[p->_y][p->_x-i] = false;
-                cout << "finish1.1" << endl;
-                terrain[p->_y+TAILLE_P][p->_x-(i-1)] = true;
-
+                terrain[(p)->_y][(p)->_x-i] = false;
+                terrain[(p)->_y+TAILLE_P][(p)->_x-(i-1)] = true;
             }
             for(int i=1;i<TAILLE_P;i++){
-                cout << "finish2" << endl;
-                terrain[p->_y+i][p->_x-(TAILLE_P-1)] = false;
-                terrain[p->_y+i][p->_x+1] = true;
+                terrain[(p)->_y+i][(p)->_x-(TAILLE_P-1)] = false;
+                terrain[(p)->_y+i][(p)->_x+1] = true;
             }
-            cout << "finish3" << endl;
             break;
 
         case 2:
@@ -519,20 +514,6 @@ void get_options(int argc, char ** argv) {
 
 
 int main(int argc, char *argv[]) {
-    bool ** terrain = creation_terrain();
-    Personne p;
-    Personne *pers = &p;
-    creation_personne(pers, 0, 0);
-    actualise(terrain, pers, 1);
-    cout << "new x: " << pers->_x << endl;
-    cout << "new y: " << pers->_y << endl;
-    vector<Personne> tab_personnes;
-    tab_personnes.push_back(p);
-    cout << "deplacement" << endl;
-    deplacement(terrain, tab_personnes, 1);
-    cout << "deplacement x : " << p._x << endl;
-    cout << "deplacement y : " << p._y << endl;
-
     get_options(argc, argv); // Recupere les options du programme
     executer(NB_PERSONNES, NB_THREADS);
 
@@ -545,14 +526,12 @@ int main(int argc, char *argv[]) {
         }
     }*/
 
-   /* Personne pers;
-    Personne *personne = &pers;
-    creation_personne(personne, 0, 0);
-    cout << "personne: " << personne->_x << personne->_y << endl;
-
-    Personne testPersonne = test(personne);
-    cout << "Test personne: " << testPersonne._x << testPersonne._y << endl;
-
-    cout << "personne: " << personne->_x << personne->_y << endl;*/
+    /* Personne pers;
+     Personne *personne = &pers;
+     creation_personne(personne, 0, 0);
+     cout << "personne: " << personne->_x << personne->_y << endl;
+     Personne testPersonne = test(personne);
+     cout << "Test personne: " << testPersonne._x << testPersonne._y << endl;
+     cout << "personne: " << personne->_x << personne->_y << endl;*/
 
 }
